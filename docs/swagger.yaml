@@ -1,0 +1,124 @@
+basePath: /
+definitions:
+  echo.HTTPError:
+    properties:
+      message:
+        type: object
+    type: object
+  models.Coordinates:
+    properties:
+      height:
+        example: "5642"
+        type: string
+      latitude:
+        example: "56.2348"
+        type: string
+      longitude:
+        example: "64.1352"
+        type: string
+    type: object
+  models.Mark:
+    properties:
+      description:
+        example: Lexa zachem mi eto delaem
+        type: string
+      photo:
+        example: Tut mogla bit vasha reklama
+        type: string
+      point:
+        $ref: '#/definitions/models.Coordinates'
+        type: object
+      title:
+        example: Pohod228
+        type: string
+    type: object
+  models.Route:
+    properties:
+      best_time_to_go:
+        example: Лето
+        type: string
+      climb:
+        example: 3800
+        type: integer
+      creator_id:
+        example: 5
+        type: integer
+      days:
+        example: 5
+        type: integer
+      description:
+        example: Lexa dava verstai skoree
+        type: string
+      difficult:
+        example: 3
+        type: integer
+      id:
+        example: 2
+        type: integer
+      is_moderate:
+        example: true
+        type: boolean
+      marks:
+        items:
+          $ref: '#/definitions/models.Mark'
+        type: array
+      name:
+        example: Lexa
+        type: string
+      region:
+        example: Хабаровский край
+        type: string
+      route:
+        items:
+          $ref: '#/definitions/models.Coordinates'
+        type: array
+      start:
+        $ref: '#/definitions/models.Coordinates'
+        type: object
+      type:
+        example: Пеший
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Echo Swagger Example API
+  version: "1.0"
+paths:
+  /route:
+    post:
+      consumes:
+      - application/json
+      description: Create a new route
+      parameters:
+      - description: new route
+        in: body
+        name: route
+        required: true
+        schema:
+          $ref: '#/definitions/models.Route'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Route'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Create a route
+      tags:
+      - Route
+schemes:
+- http
+swagger: "2.0"
