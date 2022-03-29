@@ -1,6 +1,6 @@
 log_level: debug
 host: localhost
-port: :3000
+port: :8080
 workdir: /tmp/godmod
 name: travelite
 

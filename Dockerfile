@@ -36,7 +36,7 @@ volume ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 # Back to the root user
 USER root
 
-COPY --from=build /project/configs /configs
+COPY --from=build /project/config /config
 
 COPY --from=build /project/bin /bin/
 
