@@ -29,8 +29,8 @@ import (
 // @schemes http
 
 func main() {
-	configFile := flag.String("c", "config/config.yaml", "set -c [config_path] flag")
-	logFile := flag.String("l", "stdin", "set -l [log_file] flag")
+	configFile := flag.String("config", "config/config.yaml", "set -c [config_path] flag")
+	logFile := flag.String("log", "stdout", "set -l [log_file] flag")
 	flag.Parse()
 
 	c, err := config.ParseConfig(*configFile)

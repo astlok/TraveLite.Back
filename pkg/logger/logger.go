@@ -21,8 +21,8 @@ func InitLogger(level string, filePath string) (*log.Logger, error) {
 		logger.SetOutput(file)
 		logger.Infof("Logger output set to %s", filePath)
 	} else {
-		logger.Info("Logger output set to stdin")
-		logger.SetOutput(os.Stdin)
+		logger.Info("Logger output set to stdout")
+		logger.SetOutput(os.Stdout)
 	}
 
 	return logger, nil

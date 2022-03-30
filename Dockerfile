@@ -42,4 +42,4 @@ COPY --from=build /project/bin /bin/
 
 EXPOSE 8080
 
-CMD service postgresql start && travelite
+CMD service postgresql start && ./bin/travelite config stdout log /config/config.yaml
