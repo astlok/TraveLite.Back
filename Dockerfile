@@ -20,7 +20,7 @@ ENV POSTGRES_PASSWORD=admin
 
 RUN apt-get update -y & apt-get install -y postgresql postgresql-contrib
 
-RUN apt install postgis postgresql-12-postgis-3
+RUN apt-get install postgis postgresql-12-postgis-3
 # Run the rest of the commands as the ""postgres" user created by the postgres-$PGVER** package when it was **apt installed
 USER postgres
 # Create a PostgreSQL role named ""docker"" with "docker"" as the password and
