@@ -43,6 +43,20 @@ var doc = `{
                     "Route"
                 ],
                 "summary": "Get all routes",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "55.745359 37.658375",
+                        "name": "ne",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "55.971152 63.507595",
+                        "name": "sw",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -147,6 +161,11 @@ var doc = `{
         },
         "models.Coordinates": {
             "type": "object",
+            "required": [
+                "height",
+                "latitude",
+                "longitude"
+            ],
             "properties": {
                 "height": {
                     "type": "string",
@@ -164,6 +183,10 @@ var doc = `{
         },
         "models.Mark": {
             "type": "object",
+            "required": [
+                "point",
+                "title"
+            ],
             "properties": {
                 "description": {
                     "type": "string",
@@ -185,6 +208,19 @@ var doc = `{
         },
         "models.Route": {
             "type": "object",
+            "required": [
+                "climb",
+                "creator_id",
+                "days",
+                "difficult",
+                "is_moderate",
+                "marks",
+                "name",
+                "region",
+                "route",
+                "start",
+                "type"
+            ],
             "properties": {
                 "best_time_to_go": {
                     "type": "string",

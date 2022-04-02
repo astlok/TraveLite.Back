@@ -74,17 +74,44 @@ func (u *RouteUseCase) GetRouteByID(id uint64) (models.Route, error) {
 	return uRoute, nil
 }
 
-func (u *RouteUseCase) GetAllRoutesWithoutRouteLing() ([]models.Route, error) {
+func (u *RouteUseCase) GetAllRoutesWithFilters(filters models.RouteFilters) ([]models.Route, error) {
 	var routes []models.Route
+	var dbRoutes []models.DBRoute
+	var err error
 
-	dbRoutes, err := u.routeRepo.SelectAllRoutesWithoutRouteLine()
+	if filters.RoutesInPolygon.NorthEast != "" && filters.RoutesInPolygon.SouthWest != "" {
+		ne := strings.Split(filters.RoutesInPolygon.NorthEast, " ")
+		sw := strings.Split(filters.RoutesInPolygon.SouthWest, " ")
+
+		neLat := ne[0]
+		neLong := ne[1]
+		swLat := sw[0]
+		swLong := sw[1]
+
+		// get string from ne and sw like SRID=4326;POLYGON((55.745359 37.658375, 55.745526 37.705746, 55.724144 37.709792, 55.723866 37.627189, 55.745359 37.658375))
+		polygon := "SRID=4326;POLYGON((" + neLat + " " + neLong + ", " + neLat + " " + swLong + ", " + swLat + " " + swLong + ", " + swLat + " " + neLong + ", " + neLat + " " + neLong + "))"
+		dbRoutes, err = u.routeRepo.SelectAllRoutesInPolygon(polygon)
+	} else {
+		dbRoutes, err = u.routeRepo.SelectAllRoutes()
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "can't select all routes without route line from db")
 	}
 
 	err = copier.Copy(&routes, &dbRoutes)
-	if err != nil {
+	if err != nil || len(routes) != len(dbRoutes) {
 		return nil, errors.Wrap(err, "can't copy dbRoutes to routes")
+	}
+
+	for i, _ := range routes {
+		routes[i].Start, err = stringPointToCoorPoint(dbRoutes[i].Start)
+		if err != nil {
+			return nil, errors.Wrap(err, "Can't convert db point to point")
+		}
+	}
+
+	if routes == nil {
+		routes = []models.Route{}
 	}
 
 	return routes, nil
@@ -98,7 +125,7 @@ func routeToDBRoute(route models.Route) (models.DBRoute, error) {
 		return models.DBRoute{}, errors.Wrap(err, "can't copy fields from route to DB route")
 	}
 
-	dbRoute.Route += "LINESTRING Z("
+	dbRoute.Route += "SRID=4326;LINESTRING Z("
 	for i, coor := range route.Route {
 		dbRoute.Route += coor.Latitude + " " + coor.Longitude + " " + coor.Height
 		if i != len(route.Route)-1 {
@@ -107,7 +134,7 @@ func routeToDBRoute(route models.Route) (models.DBRoute, error) {
 	}
 	dbRoute.Route += ")"
 
-	dbRoute.Start += "POINT Z(" + route.Start.Latitude + " " + route.Start.Longitude + " " + route.Start.Height + ")"
+	dbRoute.Start += "SRID=4326;POINT Z(" + route.Start.Latitude + " " + route.Start.Longitude + " " + route.Start.Height + ")"
 	//for i, coor := range route.Route {
 	//	dbRoute.Route += coor.Latitude + " " + coor.Longitude + " " + coor.Height
 	//	if i != len(route.Route) {
@@ -125,7 +152,7 @@ func genDBMarks(route models.Route) []models.DBMark {
 	for _, mark := range route.Marks {
 		var m models.DBMark
 		m.TrekId = route.ID
-		m.Point = "POINT Z(" + mark.Point.Latitude + " " + mark.Point.Longitude + " " + mark.Point.Height + ")"
+		m.Point = "SRID=4326;POINT Z(" + mark.Point.Latitude + " " + mark.Point.Longitude + " " + mark.Point.Height + ")"
 		m.Title = mark.Title
 		//TODO: add photo service
 		//m.Photo = mark.Photo
@@ -207,4 +234,23 @@ func dbMarksToMarks(dbMarks []models.DBMark) ([]models.Mark, error) {
 	}
 
 	return marks, nil
+}
+
+func stringPointToCoorPoint(sPoint string) (models.Coordinates, error) {
+	sPoint = strings.Replace(sPoint, "POINT Z (", "", -1)
+	sPoint = strings.Replace(sPoint, ")", "", -1)
+
+	sCoors := strings.Split(sPoint, " ")
+	if len(sCoors) != 3 {
+		//TODO: Refactor error
+		return models.Coordinates{}, ErrIncorrectPoint
+	}
+
+	var coors models.Coordinates
+
+	coors.Latitude = sCoors[0]
+	coors.Longitude = sCoors[1]
+	coors.Height = sCoors[2]
+
+	return coors, nil
 }

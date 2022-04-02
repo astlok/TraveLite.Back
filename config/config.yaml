@@ -11,6 +11,9 @@ postgres:
   host: 127.0.0.1
   port: 5432
 
+geography:
+  srid: 4326
+
 cors:
   allow_methods:
     - "GET"

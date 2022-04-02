@@ -16,6 +16,10 @@ definitions:
       longitude:
         example: "64.1352"
         type: string
+    required:
+    - height
+    - latitude
+    - longitude
     type: object
   models.Mark:
     properties:
@@ -31,6 +35,9 @@ definitions:
       title:
         example: Pohod228
         type: string
+    required:
+    - point
+    - title
     type: object
   models.Route:
     properties:
@@ -78,6 +85,18 @@ definitions:
       type:
         example: Пеший
         type: string
+    required:
+    - climb
+    - creator_id
+    - days
+    - difficult
+    - is_moderate
+    - marks
+    - name
+    - region
+    - route
+    - start
+    - type
     type: object
 host: localhost:8080
 info:
@@ -96,6 +115,15 @@ paths:
   /route:
     get:
       description: Get all routes without marks and route line
+      parameters:
+      - description: 55.745359 37.658375
+        in: query
+        name: ne
+        type: string
+      - description: 55.971152 63.507595
+        in: query
+        name: sw
+        type: string
       produces:
       - application/json
       responses:

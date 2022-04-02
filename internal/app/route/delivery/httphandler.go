@@ -68,7 +68,7 @@ func (h *RouteHandler) GetRoute(c echo.Context) error {
 	return c.JSON(http.StatusOK, r)
 }
 
-// GetRoutesWithoutRouteLines godoc
+// GetRoutesWithFilters godoc
 // @Summary Get all routes
 // @Description  Get all routes without marks and route line
 // @Tags Route
@@ -76,8 +76,26 @@ func (h *RouteHandler) GetRoute(c echo.Context) error {
 // @Success 200 {object} []models.Route
 // @Failure 500 {object} echo.HTTPError
 // @Router /route [get]
-func (h *RouteHandler) GetRoutesWithoutRouteLines(c echo.Context) error {
-	routes, err := h.routeUseCase.GetAllRoutesWithoutRouteLing()
+// @Param ne query string false "55.745359 37.658375"
+// @Param sw query string false "55.971152 63.507595"
+func (h *RouteHandler) GetRoutesWithFilters(c echo.Context) error {
+	var filters models.RouteFilters
+
+	errs := echo.QueryParamsBinder(c).
+		String("ne", &filters.RoutesInPolygon.NorthEast).
+		String("sw", &filters.RoutesInPolygon.SouthWest).
+		BindErrors()
+	if errs != nil {
+		errMess := "Can't binding query param: "
+		for _, err := range errs {
+			bErr := err.(*echo.BindingError)
+			c.Logger().Errorf("in case you want to access what field: %s values: %v failed", bErr.Field, bErr.Values)
+			errMess += bErr.Field + ", "
+		}
+		return echo.NewHTTPError(http.StatusBadRequest, errMess)
+	}
+
+	routes, err := h.routeUseCase.GetAllRoutesWithFilters(filters)
 	if err != nil {
 		return err
 	}

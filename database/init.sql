@@ -52,12 +52,13 @@ CREATE TABLE travelite.trek
     region          TEXT                        NOT NULL,
     creator_id      INT                         NOT NULL,
     is_moderate     BOOL              DEFAULT false,
-    route           GEOMETRY(LINESTRINGZ, 4326) NOT NULL,
-    start           GEOMETRY(POINTZ, 4326)      NOT NULL,
+    route           GEOGRAPHY(LINESTRINGZ, 4326) NOT NULL,
+    start           GEOGRAPHY(POINTZ, 4326)      NOT NULL,
     FOREIGN KEY (creator_id)
         REFERENCES travelite.users (id)
 );
 
+CREATE INDEX start_trek_idx ON travelite.trek USING GIST (start);
 -- SELECT enum_range(NULL::travelite.hike_type);
 
 -- INSERT INTO travelite.trek (name,
@@ -98,7 +99,7 @@ select id, name, difficult, days, description, best_time_to_go, type, climb, reg
 CREATE TABLE travelite.marks
 (
     trek_id     INT                    NOT NULL,
-    point       GEOMETRY(POINTZ, 4326) NOT NULL,
+    point       GEOGRAPHY(POINTZ, 4326) NOT NULL,
     title       TEXT                   NOT NULL,
     description TEXT DEFAULT '',
     image       TEXT DEFAULT '',
@@ -245,5 +246,17 @@ VALUES ('Москва и МО'),
        ('Еврейская автономная область'),
        ('Чукотский автономный округ');
 
-SELECT *
-FROM travelite.region;
+-- SELECT *
+-- FROM travelite.region;
+--
+-- SELECT
+--     ST_Intersects(
+--             ST_GeogFromText('SRID=4326;POLYGON Z((55.745359 37.658375 1230481234, 55.745526 37.705746 129341234, 55.724144 37.709792 7865823796, 55.723866 37.627189 12348124, 55.745359 37.658375 1238947812))'),
+--             ST_GeogFromText('SRID=4326;POINT Z(55.737454 37.674165 19234129034781298743)'));
+--
+-- SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(start) AS START from travelite.trek
+-- WHERE ST_Intersects(
+--               ST_GeogFromText('SRID=4326;POLYGON ((55.745359 37.658375, 55.745526 37.705746, 55.724144 37.709792, 55.723866 37.627189, 55.745359 37.658375))'),
+--               START);
+--
+-- SELECT 'SRID=4326;POINT (55.745359 37.658375)'::geometry;

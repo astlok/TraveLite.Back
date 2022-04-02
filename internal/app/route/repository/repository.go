@@ -29,8 +29,8 @@ const InsertTrek = `INSERT INTO travelite.trek (
 	:region,
 	:creator_id,
 	:is_moderate,
-	ST_GeomFromText(:route, 4326),
-	ST_GeomFromText(:start, 4326)
+	ST_GeogFromText(:route),
+	ST_GeogFromText(:start)
 ) RETURNING id;`
 
 const InsertMarks = ` INSERT INTO travelite.marks (
@@ -41,7 +41,7 @@ const InsertMarks = ` INSERT INTO travelite.marks (
 	image
 ) VALUES (
 	:trek_id,
-	ST_GeomFromText(:point, 4326),
+	ST_GeogFromText(:point),
 	:title,
 	:description,
 	:image
@@ -52,6 +52,11 @@ const SelectMarksByRouteID = `select trek_id, st_astext(point) as point, title, 
 const SelectRouteByID = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(route) AS ROUTE, ST_AsText(start) AS START from travelite.trek WHERE id = $1;`
 
 const SelectAllRouteWithoutRouteLine = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(start) AS START from travelite.trek;`
+
+const SelectAllRoutesInPolygon = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(start) AS START from travelite.trek 
+	WHERE ST_Intersects(
+		ST_GeogFromText($1),
+		START);`
 
 type RouteRepo struct {
 	db *sqlx.DB
@@ -115,10 +120,21 @@ func (r *RouteRepo) SelectMarksByRouteID(id uint64) ([]models.DBMark, error) {
 	return marks, nil
 }
 
-func (r *RouteRepo) SelectAllRoutesWithoutRouteLine() ([]models.DBRoute, error) {
+func (r *RouteRepo) SelectAllRoutes() ([]models.DBRoute, error) {
 	var routes []models.DBRoute
 
 	err := r.db.Select(&routes, SelectAllRouteWithoutRouteLine)
+	if err != nil {
+		return nil, err
+	}
+
+	return routes, nil
+}
+
+func (r *RouteRepo) SelectAllRoutesInPolygon(polygon string) ([]models.DBRoute, error) {
+	var routes []models.DBRoute
+
+	err := r.db.Select(&routes, SelectAllRoutesInPolygon, polygon)
 	if err != nil {
 		return nil, err
 	}
