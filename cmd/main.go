@@ -62,5 +62,5 @@ func main() {
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
-	e.Logger.Fatal(e.Start(listerAddr))
+	e.Logger.Fatal(e.StartTLS(listerAddr, "/etc/letsencrypt/live/trailite.ru/fullchain.pem", "/etc/letsencrypt/live/trailite.ru/privkey.pem"))
 }
