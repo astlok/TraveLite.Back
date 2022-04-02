@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+var ErrIncorrectPoint = errors.New("Point don't have 3 coordinates")
+
 type RouteUseCase struct {
 	routeRepo *route.RouteRepo
 }
@@ -50,7 +52,19 @@ func (r *RouteUseCase) GetRouteByID(id uint64) (models.Route, error) {
 		return models.Route{}, errors.Wrap(err, "can't select route by id from db")
 	}
 
+	dbMarks, err := r.routeRepo.SelectMarksByRouteID(id)
+	if err != nil {
+		return models.Route{}, errors.Wrap(err, "can't select marks by id from db")
+	}
+
+	uMarks, err := dbMarksToMarks(dbMarks)
+	if err != nil {
+		return models.Route{}, errors.Wrap(err, "can't copy from db marks to marks")
+	}
+
 	var uRoute models.Route
+
+	uRoute.Marks = uMarks
 
 	uRoute, err = dbRouteToRoute(dbRoute)
 	if err != nil {
@@ -109,14 +123,72 @@ func genDBMarks(route models.Route) []models.DBMark {
 
 func dbRouteToRoute(dbRoute models.DBRoute) (models.Route, error) {
 	var r models.Route
-	err := copier.Copy(r, dbRoute)
+	err := copier.Copy(&r, &dbRoute)
 
 	if err != nil {
 		return models.Route{}, errors.Wrap(err, "can't copy fields from DB route to route")
 	}
 
-	strings.Replace(dbRoute.Route, "LINESTRING Z (", "", -1)
-	strings.Replace(dbRoute.Route, ")", "", -1)
+	dbRoute.Route = strings.Replace(dbRoute.Route, "LINESTRING Z (", "", -1)
+	dbRoute.Route = strings.Replace(dbRoute.Route, ")", "", -1)
+
+	sPoints := strings.Split(dbRoute.Route, ",")
+	for _, sPoint := range sPoints {
+		sCoors := strings.Split(sPoint, " ")
+
+		if len(sCoors) != 3 {
+			//TODO: Refactor error
+			return models.Route{}, ErrIncorrectPoint
+		}
+		var point models.Coordinates
+
+		point.Latitude = sCoors[0]
+		point.Longitude = sCoors[1]
+		point.Height = sCoors[2]
+
+		r.Route = append(r.Route, point)
+	}
+
+	dbRoute.Start = strings.Replace(dbRoute.Start, "POINT Z (", "", -1)
+	dbRoute.Start = strings.Replace(dbRoute.Start, ")", "", -1)
+
+	sStart := strings.Split(dbRoute.Start, " ")
+	if len(sStart) != 3 {
+		//TODO: Refactor error
+		return models.Route{}, ErrIncorrectPoint
+	}
+
+	r.Start.Latitude = sStart[0]
+	r.Start.Longitude = sStart[1]
+	r.Start.Height = sStart[2]
 
 	return r, nil
+}
+
+func dbMarksToMarks(dbMarks []models.DBMark) ([]models.Mark, error) {
+	marks := make([]models.Mark, len(dbMarks))
+
+	for i, _ := range dbMarks {
+		dbMarks[i].Point = strings.Replace(dbMarks[i].Point, "POINT Z (", "", -1)
+		dbMarks[i].Point = strings.Replace(dbMarks[i].Point, ")", "", -1)
+	}
+
+	err := copier.Copy(&marks, &dbMarks)
+	if err != nil || len(marks) != len(dbMarks) {
+		return nil, errors.Wrap(err, "can't copy fields from db marks to marks")
+	}
+
+	for i, dbMark := range dbMarks {
+		coor := strings.Split(dbMark.Point, " ")
+		if len(coor) != 3 {
+			//TODO: Refactor error
+			return nil, ErrIncorrectPoint
+		}
+
+		marks[i].Point.Latitude = coor[0]
+		marks[i].Point.Longitude = coor[1]
+		marks[i].Point.Height = coor[2]
+	}
+
+	return marks, nil
 }

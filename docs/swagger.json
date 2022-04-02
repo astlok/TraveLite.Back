@@ -18,7 +18,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:3000",
+    "host": "localhost:8080",
     "basePath": "/",
     "paths": {
         "/route": {
@@ -43,6 +43,41 @@
                         "schema": {
                             "$ref": "#/definitions/models.Route"
                         }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Route"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/route/{id}": {
+            "get": {
+                "description": "Get one route by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Route"
+                ],
+                "summary": "Get route by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Route id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {

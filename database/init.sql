@@ -106,6 +106,9 @@ CREATE TABLE travelite.marks
         REFERENCES travelite.trek (id) ON DELETE CASCADE
 );
 
+select trek_id, st_astext(point), title, description, image from travelite.marks where trek_id=1;
+
+
 -- CREATE TABLE travelite.trek_rating
 -- (
 --     user_id INT    NOT NULL,

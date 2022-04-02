@@ -3,7 +3,9 @@ package route
 import (
 	route "TraveLite/internal/app/route/usecase"
 	"TraveLite/internal/models"
+	"github.com/pkg/errors"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -28,17 +30,40 @@ func NewMapHandler(routeUseCase *route.RouteUseCase) *RouteHandler {
 // @Success 201 {object} models.Route
 // @Failure 500 {object} echo.HTTPError
 // @Router /route [post]
-func (m *RouteHandler) CreateRoute(c echo.Context) error {
+func (h *RouteHandler) CreateRoute(c echo.Context) error {
 	routeCreate := &models.Route{}
 
 	if err := c.Bind(routeCreate); err != nil {
 		return err
 	}
 
-	routeGet, err := m.routeUseCase.CreateRoute(*routeCreate)
+	routeGet, err := h.routeUseCase.CreateRoute(*routeCreate)
 	if err != nil {
 		return err
 	}
 
 	return c.JSON(http.StatusCreated, routeGet)
+}
+
+// GetRoute godoc
+// @Summary Get route by id
+// @Description Get one route by id
+// @Tags Route
+// @Produce json
+// @Param id path uint64 true "Route id"
+// @Success 201 {object} models.Route
+// @Failure 500 {object} echo.HTTPError
+// @Router /route/{id} [get]
+func (h *RouteHandler) GetRoute(c echo.Context) error {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return errors.Wrap(err, "Can't parse id from string to uint64")
+	}
+
+	r, err := h.routeUseCase.GetRouteByID(id)
+	if err != nil {
+		return errors.Wrap(err, "Can't get route by id")
+	}
+
+	return c.JSON(http.StatusOK, r)
 }

@@ -29,8 +29,8 @@ const InsertTrek = `INSERT INTO travelite.trek (
 	:region,
 	:creator_id,
 	:is_moderate,
-	:route,
-	:start
+	ST_GeomFromText(:route, 4326),
+	ST_GeomFromText(:start, 4326)
 ) RETURNING id;`
 
 const InsertMarks = ` INSERT INTO travelite.marks (
@@ -41,11 +41,13 @@ const InsertMarks = ` INSERT INTO travelite.marks (
 	image
 ) VALUES (
 	:trek_id,
-	:point,
+	ST_GeomFromText(:point, 4326),
 	:title,
 	:description,
 	:image
 );`
+
+const SelectMarksByRouteID = `select trek_id, st_astext(point) as point, title, description, image from travelite.marks where trek_id=$1;`
 
 const SelectRouteByID = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(route) AS ROUTE, ST_AsText(start) AS START from travelite.trek WHERE id = $1;`
 
@@ -98,4 +100,15 @@ func (m *RouteRepo) SelectRouteByID(id uint64) (models.DBRoute, error) {
 	}
 
 	return route, nil
+}
+
+func (r *RouteRepo) SelectMarksByRouteID(id uint64) ([]models.DBMark, error) {
+	var marks []models.DBMark
+
+	err := r.db.Select(&marks, SelectMarksByRouteID, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return marks, nil
 }

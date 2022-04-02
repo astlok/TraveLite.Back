@@ -79,7 +79,7 @@ definitions:
         example: Пеший
         type: string
     type: object
-host: localhost:3000
+host: localhost:8080
 info:
   contact:
     email: support@swagger.io
@@ -117,6 +117,29 @@ paths:
           schema:
             $ref: '#/definitions/echo.HTTPError'
       summary: Create a route
+      tags:
+      - Route
+  /route/{id}:
+    get:
+      description: Get one route by id
+      parameters:
+      - description: Route id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Route'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get route by id
       tags:
       - Route
 schemes:

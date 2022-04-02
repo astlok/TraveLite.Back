@@ -72,6 +72,41 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/route/{id}": {
+            "get": {
+                "description": "Get one route by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Route"
+                ],
+                "summary": "Get route by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Route id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.Route"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -201,7 +236,7 @@ type swaggerInfo struct {
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
 	Version:     "1.0",
-	Host:        "localhost:3000",
+	Host:        "localhost:8080",
 	BasePath:    "/",
 	Schemes:     []string{"http"},
 	Title:       "Echo Swagger Example API",

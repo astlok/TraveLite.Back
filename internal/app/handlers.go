@@ -16,6 +16,7 @@ func HandlersInit(db *sqlx.DB) *echo.Echo {
 	routeHandlers := routemapH.NewMapHandler(routeUseCase)
 
 	e.POST("/route", routeHandlers.CreateRoute)
+	e.GET("/route/:id", routeHandlers.GetRoute)
 
 	return e
 }
