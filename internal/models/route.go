@@ -26,7 +26,7 @@ type Route struct {
 	CreatorID    int           `json:"creator_id" example:"5"`
 	IsModerate   bool          `json:"is_moderate" example:"true"`
 	Marks        []Mark        `json:"marks,omitempty"`
-	Route        []Coordinates `json:"route"`
+	Route        []Coordinates `json:"route,omitempty"`
 	Start        Coordinates   `json:"start"`
 }
 

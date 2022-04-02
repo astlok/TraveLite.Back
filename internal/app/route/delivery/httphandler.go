@@ -67,3 +67,20 @@ func (h *RouteHandler) GetRoute(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, r)
 }
+
+// GetRoutesWithoutRouteLines godoc
+// @Summary Get all routes
+// @Description  Get all routes without marks and route line
+// @Tags Route
+// @Produce json
+// @Success 200 {object} []models.Route
+// @Failure 500 {object} echo.HTTPError
+// @Router /route [get]
+func (h *RouteHandler) GetRoutesWithoutRouteLines(c echo.Context) error {
+	routes, err := h.routeUseCase.GetAllRoutesWithoutRouteLing()
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, routes)
+}

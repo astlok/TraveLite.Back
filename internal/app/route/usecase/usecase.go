@@ -20,13 +20,13 @@ func NewMapUseCase(routeRepo *route.RouteRepo) *RouteUseCase {
 	}
 }
 
-func (r *RouteUseCase) CreateRoute(route models.Route) (models.Route, error) {
+func (u *RouteUseCase) CreateRoute(route models.Route) (models.Route, error) {
 	dbRoute, err := routeToDBRoute(route)
 	if err != nil {
 		return models.Route{}, errors.Wrap(err, "can't transform route to DB route")
 	}
 
-	id, err := r.routeRepo.CreateRoute(dbRoute)
+	id, err := u.routeRepo.CreateRoute(dbRoute)
 	if err != nil {
 		return models.Route{}, errors.Wrap(err, "can't insert route to DB")
 	}
@@ -38,7 +38,7 @@ func (r *RouteUseCase) CreateRoute(route models.Route) (models.Route, error) {
 		return models.Route{}, errors.Wrap(err, "can't generate DB marks from route")
 	}
 
-	err = r.routeRepo.CreateMarks(marks)
+	err = u.routeRepo.CreateMarks(marks)
 	if err != nil {
 		return models.Route{}, errors.Wrap(err, "can't insert marks to DB")
 	}
@@ -46,13 +46,13 @@ func (r *RouteUseCase) CreateRoute(route models.Route) (models.Route, error) {
 	return route, nil
 }
 
-func (r *RouteUseCase) GetRouteByID(id uint64) (models.Route, error) {
-	dbRoute, err := r.routeRepo.SelectRouteByID(id)
+func (u *RouteUseCase) GetRouteByID(id uint64) (models.Route, error) {
+	dbRoute, err := u.routeRepo.SelectRouteByID(id)
 	if err != nil {
 		return models.Route{}, errors.Wrap(err, "can't select route by id from db")
 	}
 
-	dbMarks, err := r.routeRepo.SelectMarksByRouteID(id)
+	dbMarks, err := u.routeRepo.SelectMarksByRouteID(id)
 	if err != nil {
 		return models.Route{}, errors.Wrap(err, "can't select marks by id from db")
 	}
@@ -64,14 +64,30 @@ func (r *RouteUseCase) GetRouteByID(id uint64) (models.Route, error) {
 
 	var uRoute models.Route
 
-	uRoute.Marks = uMarks
-
 	uRoute, err = dbRouteToRoute(dbRoute)
 	if err != nil {
 		return models.Route{}, errors.Wrap(err, "can't copy from db route to route")
 	}
 
+	uRoute.Marks = uMarks
+
 	return uRoute, nil
+}
+
+func (u *RouteUseCase) GetAllRoutesWithoutRouteLing() ([]models.Route, error) {
+	var routes []models.Route
+
+	dbRoutes, err := u.routeRepo.SelectAllRoutesWithoutRouteLine()
+	if err != nil {
+		return nil, errors.Wrap(err, "can't select all routes without route line from db")
+	}
+
+	err = copier.Copy(&routes, &dbRoutes)
+	if err != nil {
+		return nil, errors.Wrap(err, "can't copy dbRoutes to routes")
+	}
+
+	return routes, nil
 }
 
 func routeToDBRoute(route models.Route) (models.DBRoute, error) {

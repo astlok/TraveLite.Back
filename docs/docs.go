@@ -34,6 +34,33 @@ var doc = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/route": {
+            "get": {
+                "description": "Get all routes without marks and route line",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Route"
+                ],
+                "summary": "Get all routes",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Route"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Create a new route",
                 "consumes": [

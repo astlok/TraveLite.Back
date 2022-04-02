@@ -51,6 +51,8 @@ const SelectMarksByRouteID = `select trek_id, st_astext(point) as point, title, 
 
 const SelectRouteByID = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(route) AS ROUTE, ST_AsText(start) AS START from travelite.trek WHERE id = $1;`
 
+const SelectAllRouteWithoutRouteLine = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(start) AS START from travelite.trek;`
+
 type RouteRepo struct {
 	db *sqlx.DB
 }
@@ -111,4 +113,15 @@ func (r *RouteRepo) SelectMarksByRouteID(id uint64) ([]models.DBMark, error) {
 	}
 
 	return marks, nil
+}
+
+func (r *RouteRepo) SelectAllRoutesWithoutRouteLine() ([]models.DBRoute, error) {
+	var routes []models.DBRoute
+
+	err := r.db.Select(&routes, SelectAllRouteWithoutRouteLine)
+	if err != nil {
+		return nil, err
+	}
+
+	return routes, nil
 }
