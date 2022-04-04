@@ -15,9 +15,10 @@ func HandlersInit(db *sqlx.DB) *echo.Echo {
 	routeUseCase := routemapU.NewMapUseCase(routeRepo)
 	routeHandlers := routemapH.NewMapHandler(routeUseCase)
 
-	e.POST("/route", routeHandlers.CreateRoute)
-	e.GET("/route/:id", routeHandlers.GetRoute)
-	e.GET("/route", routeHandlers.GetRoutesWithFilters)
+	api := e.Group("/api/v1")
+	api.POST("/route", routeHandlers.CreateRoute)
+	api.GET("/route/:id", routeHandlers.GetRoute)
+	api.GET("/route", routeHandlers.GetRoutesWithFilters)
 
 	return e
 }
