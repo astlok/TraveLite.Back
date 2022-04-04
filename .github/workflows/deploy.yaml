@@ -91,7 +91,7 @@ jobs:
       - name: rm & build & run docker images
         uses: appleboy/ssh-action@master
         with:
-          host: 95.163.212.121
+          host: 87.239.110.165
           username: ubuntu
           key: ${{ secrets.KEY }}
           script: |
