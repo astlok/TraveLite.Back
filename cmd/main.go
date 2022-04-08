@@ -3,6 +3,7 @@ package main
 import (
 	"TraveLite/config"
 	"TraveLite/database/postgres"
+	"TraveLite/database/s3storage"
 	_ "TraveLite/docs" // you need to update github.com/rizalgowandy/go-swag-sample with your own project path
 	"TraveLite/internal/app"
 	"TraveLite/pkg/logger"
@@ -50,7 +51,15 @@ func main() {
 		log.Fatalf("Can't init database with err %v", err)
 	}
 
-	e := app.HandlersInit(p.GetPostgres())
+	s3store := s3storage.NewS3Storage()
+
+	//resp, err := s3store.Get().ListBuckets(&s3.ListBucketsInput{})
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Println(resp)
+
+	e := app.HandlersInit(p.GetPostgres(), s3store.Get())
 
 	e.Logger = l
 

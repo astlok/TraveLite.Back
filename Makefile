@@ -6,4 +6,4 @@ stop:
 del:
 	docker rmi -f $(shell docker images -a -q)
 doc:
-	swag init --parseDependency --parseInternal -g cmd/main.go --o docs/
+	swag init --parseDependency --parseInternal --parseVendor -g cmd/main.go --o docs/

@@ -4,7 +4,7 @@ COPY . /project
 
 WORKDIR /project
 
-RUN go build -mod=vendor -o bin/travelite -v ./cmd/
+RUN go build -o bin/travelite -v ./cmd/
 
 #================================
 FROM ubuntu:20.04 AS release

@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -78,13 +79,83 @@ func (h *RouteHandler) GetRoute(c echo.Context) error {
 // @Router /route [get]
 // @Param ne query string false "55.745359 37.658375"
 // @Param sw query string false "55.971152 63.507595"
+// @Param limit query int false "limit" default(0)
+// @Param offset query int false "offset" default(0)
+// @Param type query string false "Route type" Enums:(Пеший, Горный, Водный, Альпинизм, Велотуризм, Бег, Мото, Авто, Скитур, Лыжный, Горный велотуризм, Бездорожье, Ски-альпинизм, Снегоступы)
+// @Param sort query string false "Sort by this, default rate" Enums:(rate, radius)
+// @Param desc query boolean false "sort desc or asc(by default)" default(false)
+// @Param difficult query []int false "difficult=1,4  FIRST is from SECOND is to"
+// @Param days query []int false "days=2,6  FIRST is from SECOND is to"
+// @Param distance query []int false "distance=20,50  FIRST is from SECOND is to"
 func (h *RouteHandler) GetRoutesWithFilters(c echo.Context) error {
-	var filters models.RouteFilters
+	conditions := models.NewRouteConditions()
 
 	errs := echo.QueryParamsBinder(c).
-		String("ne", &filters.RoutesInPolygon.NorthEast).
-		String("sw", &filters.RoutesInPolygon.SouthWest).
+		String("ne", &conditions.RoutesInPolygon.NorthEast).
+		String("sw", &conditions.RoutesInPolygon.SouthWest).
+		Int("offset", &conditions.Offset).
+		Int("limit", &conditions.Limit).
+		Bool("desc", &conditions.Desc).
+		CustomFunc("sort", func(values []string) []error {
+			var errs []error
+			if len(values) > 1 {
+				errs = append(errs, echo.NewBindingError("sort", values, "more than 1 value in sort param", nil))
+				return errs
+			}
+
+			conditions.OrderBy = models.NewSort(values[0])
+
+			return nil
+		}).
+		CustomFunc("type", func(values []string) []error {
+			var errs []error
+			if len(values) > 1 {
+				errs = append(errs, echo.NewBindingError("type", values, "more than 1 value in type param", nil))
+				return errs
+			}
+
+			conditions.FiltersCol["type"] = values[0]
+
+			return nil
+		}).
+		CustomFunc("difficult", func(values []string) []error {
+			var errs []error
+			if len(values) > 1 {
+				errs = append(errs, echo.NewBindingError("difficult", values, "more than 1 value in difficult param, must be like difficult=1,3", nil))
+				return errs
+			}
+
+			values[0] = strings.ReplaceAll(values[0], " ", "")
+			conditions.FiltersVal["difficult"] = strings.Split(values[0], ",")
+
+			return nil
+		}).
+		CustomFunc("days", func(values []string) []error {
+			var errs []error
+			if len(values) > 1 {
+				errs = append(errs, echo.NewBindingError("days", values, "more than 1 value in difficult param, must be like days=1,3", nil))
+				return errs
+			}
+
+			values[0] = strings.ReplaceAll(values[0], " ", "")
+			conditions.FiltersVal["days"] = strings.Split(values[0], ",")
+
+			return nil
+		}).
+		CustomFunc("distance", func(values []string) []error {
+			var errs []error
+			if len(values) > 1 {
+				errs = append(errs, echo.NewBindingError("distance", values, "more than 1 value in distance param, must be like days=1,3", nil))
+				return errs
+			}
+
+			values[0] = strings.ReplaceAll(values[0], " ", "")
+			conditions.FiltersVal["distance"] = strings.Split(values[0], ",")
+
+			return nil
+		}).
 		BindErrors()
+
 	if errs != nil {
 		errMess := "Can't binding query param: "
 		for _, err := range errs {
@@ -95,7 +166,7 @@ func (h *RouteHandler) GetRoutesWithFilters(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, errMess)
 	}
 
-	routes, err := h.routeUseCase.GetAllRoutesWithFilters(filters)
+	routes, err := h.routeUseCase.GetAllRoutesWithConditions(conditions)
 	if err != nil {
 		return err
 	}

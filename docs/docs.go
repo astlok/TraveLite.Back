@@ -55,6 +55,66 @@ var doc = `{
                         "description": "55.971152 63.507595",
                         "name": "sw",
                         "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Route type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort by this, default rate",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "sort desc or asc(by default)",
+                        "name": "desc",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "description": "difficult=1,4  FIRST is from SECOND is to",
+                        "name": "difficult",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "description": "days=2,6  FIRST is from SECOND is to",
+                        "name": "days",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "description": "distance=20,50  FIRST is from SECOND is to",
+                        "name": "distance",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -209,11 +269,12 @@ var doc = `{
         "models.Route": {
             "type": "object",
             "required": [
+                "best_time_to_go",
                 "climb",
                 "creator_id",
                 "days",
                 "difficult",
-                "is_moderate",
+                "distance",
                 "marks",
                 "name",
                 "region",
@@ -224,6 +285,12 @@ var doc = `{
             "properties": {
                 "best_time_to_go": {
                     "type": "string",
+                    "enum": [
+                        "Зима",
+                        " Весна",
+                        " Лето",
+                        " Осень"
+                    ],
                     "example": "Лето"
                 },
                 "climb": {
@@ -246,19 +313,29 @@ var doc = `{
                     "type": "integer",
                     "example": 3
                 },
+                "distance": {
+                    "type": "integer",
+                    "example": 1488
+                },
                 "id": {
                     "type": "integer",
                     "example": 2
-                },
-                "is_moderate": {
-                    "type": "boolean",
-                    "example": true
                 },
                 "marks": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.Mark"
                     }
+                },
+                "mod_status": {
+                    "type": "string",
+                    "enum": [
+                        "no status",
+                        " pending",
+                        " failed",
+                        " verified"
+                    ],
+                    "example": "no status"
                 },
                 "name": {
                     "type": "string",
@@ -280,6 +357,22 @@ var doc = `{
                 },
                 "type": {
                     "type": "string",
+                    "enum": [
+                        "Пеший",
+                        " Горный",
+                        " Водный",
+                        " Альпинизм",
+                        " Велотуризм",
+                        " Бег",
+                        " Мото",
+                        " Авто",
+                        " Скитур",
+                        " Лыжный",
+                        " Горный велотуризм",
+                        " Бездорожье",
+                        " Ски-альпинизм",
+                        " Снегоступы"
+                    ],
                     "example": "Пеший"
                 }
             }

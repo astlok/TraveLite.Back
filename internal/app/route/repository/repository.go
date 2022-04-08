@@ -2,12 +2,15 @@ package route
 
 import (
 	"TraveLite/internal/models"
+	"fmt"
 	"github.com/jmoiron/sqlx"
+	"strings"
 )
 
 const InsertTrek = `INSERT INTO travelite.trek (
 	name,
 	difficult,
+	disnatce,
 	days,
 	description,
 	best_time_to_go,
@@ -15,12 +18,13 @@ const InsertTrek = `INSERT INTO travelite.trek (
 	climb,
 	region,
 	creator_id,
-	is_moderate,
+	mod_status,
 	route,
 	start
 ) VALUES (
 	:name,
 	:difficult,
+    :distance,
 	:days,
 	:description,
 	:best_time_to_go,
@@ -28,7 +32,7 @@ const InsertTrek = `INSERT INTO travelite.trek (
 	:climb,
 	:region,
 	:creator_id,
-	:is_moderate,
+	:mod_status,
 	ST_GeogFromText(:route),
 	ST_GeogFromText(:start)
 ) RETURNING id;`
@@ -51,9 +55,9 @@ const SelectMarksByRouteID = `select trek_id, st_astext(point) as point, title, 
 
 const SelectRouteByID = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(route) AS ROUTE, ST_AsText(start) AS START from travelite.trek WHERE id = $1;`
 
-const SelectAllRouteWithoutRouteLine = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(start) AS START from travelite.trek;`
+const SelectAllRouteWithoutRouteLine = "SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, mod_status, ST_AsText(start) AS START from travelite.trek"
 
-const SelectAllRoutesInPolygon = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(start) AS START from travelite.trek 
+const SelectAllRoutesInPolygon = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, mod_status, ST_AsText(start) AS START from travelite.trek 
 	WHERE ST_Intersects(
 		ST_GeogFromText($1),
 		START);`
@@ -120,10 +124,16 @@ func (r *RouteRepo) SelectMarksByRouteID(id uint64) ([]models.DBMark, error) {
 	return marks, nil
 }
 
-func (r *RouteRepo) SelectAllRoutes() ([]models.DBRoute, error) {
+func (r *RouteRepo) SelectAllRoutesWithCond(conditions models.RouteConditions) ([]models.DBRoute, error) {
 	var routes []models.DBRoute
 
-	err := r.db.Select(&routes, SelectAllRouteWithoutRouteLine)
+	query, args, err := buildConditionsString(SelectAllRouteWithoutRouteLine, conditions, models.AllowedRouteFilters)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.db.Select(&routes, query, args...)
+
 	if err != nil {
 		return nil, err
 	}
@@ -131,13 +141,72 @@ func (r *RouteRepo) SelectAllRoutes() ([]models.DBRoute, error) {
 	return routes, nil
 }
 
-func (r *RouteRepo) SelectAllRoutesInPolygon(polygon string) ([]models.DBRoute, error) {
-	var routes []models.DBRoute
+func buildConditionsString(query string, conditions models.RouteConditions, allowedFilters map[string]string) (string, []interface{}, error) {
+	filterString := "WHERE 1=1"
+	var inputArgs []interface{}
 
-	err := r.db.Select(&routes, SelectAllRoutesInPolygon, polygon)
-	if err != nil {
-		return nil, err
+	// filter key is the url name of the filter used as the lookup for the allowed filters list
+	for filterKey, filterValList := range conditions.FiltersVal {
+		if realFilterName, ok := allowedFilters[filterKey]; ok {
+			if len(filterValList) == 0 {
+				continue
+			}
+
+			filterString = fmt.Sprintf("%s AND %s IN (?)", filterString, realFilterName)
+			inputArgs = append(inputArgs, filterValList)
+		}
 	}
 
-	return routes, nil
+	for filterKey, filterCol := range conditions.FiltersCol {
+		if realFilterName, ok := allowedFilters[filterKey]; ok {
+			if len(filterCol) == 0 {
+				continue
+			}
+
+			filterString = fmt.Sprintf("%s AND %s = ?", filterString, realFilterName)
+			inputArgs = append(inputArgs, filterCol)
+		}
+	}
+
+	if conditions.RoutesInPolygon.NorthEast != "" && conditions.RoutesInPolygon.SouthWest != "" {
+		ne := strings.Split(conditions.RoutesInPolygon.NorthEast, " ")
+		sw := strings.Split(conditions.RoutesInPolygon.SouthWest, " ")
+
+		neLat := ne[0]
+		neLong := ne[1]
+		swLat := sw[0]
+		swLong := sw[1]
+
+		filterString = fmt.Sprintf("%s AND  ST_Intersects(ST_GeogFromText(?), START)", filterString)
+
+		// get string from ne and sw like SRID=4326;POLYGON((55.745359 37.658375, 55.745526 37.705746, 55.724144 37.709792, 55.723866 37.627189, 55.745359 37.658375))
+		polygon := "SRID=4326;POLYGON((" + neLat + " " + neLong + ", " + neLat + " " + swLong + ", " + swLat + " " + swLong + ", " + swLat + " " + neLong + ", " + neLat + " " + neLong + "))"
+		inputArgs = append(inputArgs, polygon)
+	}
+
+	//TODO: сделат ордер бай рабочим
+	//if conditions.Desc {
+	//	filterString = fmt.Sprintf("%s ORDER BY %s DESC", filterString, conditions.OrderBy.String())
+	//} else {
+	//	filterString = fmt.Sprintf("%s ORDER BY %s", filterString, conditions.OrderBy.String())
+	//}
+
+	if conditions.Limit != 0 {
+		filterString = fmt.Sprintf("%s LIMIT ?", filterString)
+		inputArgs = append(inputArgs, conditions.Limit)
+	}
+
+	if conditions.Offset != 0 {
+		filterString = fmt.Sprintf("%s OFFSET ?", filterString)
+		inputArgs = append(inputArgs, conditions.Offset)
+	}
+
+	query, args, err := sqlx.In(fmt.Sprintf("%s %s", query, filterString), inputArgs...)
+	if err != nil {
+		return "", nil, err
+	}
+
+	query = sqlx.Rebind(sqlx.DOLLAR, query)
+
+	return query, args, nil
 }

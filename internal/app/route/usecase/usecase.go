@@ -5,6 +5,7 @@ import (
 	"TraveLite/internal/models"
 	"github.com/jinzhu/copier"
 	"github.com/pkg/errors"
+	"strconv"
 	"strings"
 )
 
@@ -21,6 +22,13 @@ func NewMapUseCase(routeRepo *route.RouteRepo) *RouteUseCase {
 }
 
 func (u *RouteUseCase) CreateRoute(route models.Route) (models.Route, error) {
+	climb, err := getClimb(route)
+	if err != nil {
+		return models.Route{}, errors.Wrap(err, "can't get climb from route")
+	}
+
+	route.Climb = climb
+
 	dbRoute, err := routeToDBRoute(route)
 	if err != nil {
 		return models.Route{}, errors.Wrap(err, "can't transform route to DB route")
@@ -74,26 +82,13 @@ func (u *RouteUseCase) GetRouteByID(id uint64) (models.Route, error) {
 	return uRoute, nil
 }
 
-func (u *RouteUseCase) GetAllRoutesWithFilters(filters models.RouteFilters) ([]models.Route, error) {
+func (u *RouteUseCase) GetAllRoutesWithConditions(conditions models.RouteConditions) ([]models.Route, error) {
 	var routes []models.Route
 	var dbRoutes []models.DBRoute
 	var err error
 
-	if filters.RoutesInPolygon.NorthEast != "" && filters.RoutesInPolygon.SouthWest != "" {
-		ne := strings.Split(filters.RoutesInPolygon.NorthEast, " ")
-		sw := strings.Split(filters.RoutesInPolygon.SouthWest, " ")
+	dbRoutes, err = u.routeRepo.SelectAllRoutesWithCond(conditions)
 
-		neLat := ne[0]
-		neLong := ne[1]
-		swLat := sw[0]
-		swLong := sw[1]
-
-		// get string from ne and sw like SRID=4326;POLYGON((55.745359 37.658375, 55.745526 37.705746, 55.724144 37.709792, 55.723866 37.627189, 55.745359 37.658375))
-		polygon := "SRID=4326;POLYGON((" + neLat + " " + neLong + ", " + neLat + " " + swLong + ", " + swLat + " " + swLong + ", " + swLat + " " + neLong + ", " + neLat + " " + neLong + "))"
-		dbRoutes, err = u.routeRepo.SelectAllRoutesInPolygon(polygon)
-	} else {
-		dbRoutes, err = u.routeRepo.SelectAllRoutes()
-	}
 	if err != nil {
 		return nil, errors.Wrap(err, "can't select all routes without route line from db")
 	}
@@ -236,6 +231,7 @@ func dbMarksToMarks(dbMarks []models.DBMark) ([]models.Mark, error) {
 	return marks, nil
 }
 
+//TODO: использовать этот метод везде вместо копипасты
 func stringPointToCoorPoint(sPoint string) (models.Coordinates, error) {
 	sPoint = strings.Replace(sPoint, "POINT Z (", "", -1)
 	sPoint = strings.Replace(sPoint, ")", "", -1)
@@ -253,4 +249,28 @@ func stringPointToCoorPoint(sPoint string) (models.Coordinates, error) {
 	coors.Height = sCoors[2]
 
 	return coors, nil
+}
+
+func getClimb(route models.Route) (int, error) {
+	var climb int
+
+	for i, _ := range route.Route {
+		if i == 0 {
+			continue
+		}
+
+		curHeight, err := strconv.Atoi(route.Route[i].Height)
+		if err != nil {
+			return 0, errors.Wrap(err, "can't convert cur height from str to int")
+		}
+
+		prevHeight, err := strconv.Atoi(route.Route[i-1].Height)
+		if err != nil {
+			return 0, errors.Wrap(err, "can't convert prev height from str to int")
+		}
+
+		climb += curHeight - prevHeight
+	}
+
+	return climb, nil
 }

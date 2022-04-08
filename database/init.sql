@@ -39,19 +39,21 @@ CREATE TABLE travelite.region
 
 CREATE TYPE travelite.seasons AS ENUM ('Зима', 'Весна', 'Лето', 'Осень', '');
 CREATE TYPE travelite.hike_type AS ENUM ('Пеший', 'Горный', 'Водный', 'Альпинизм', 'Велотуризм', 'Бег', 'Мото', 'Авто', 'Скитур', 'Лыжный', 'Горный велотуризм', 'Бездорожье', 'Ски-альпинизм', 'Снегоступы');
+CREATE TYPE travelite.moderate_status AS ENUM ('no status', 'pending', 'failed', 'verified');
 CREATE TABLE travelite.trek
 (
-    id              SERIAL PRIMARY KEY          NOT NULL,
-    name            CITEXT                      NOT NULL,
-    difficult       INT                         NOT NULL,
-    days            INT                         NOT NULL,
-    description     CITEXT            DEFAULT '',
-    best_time_to_go TRAVELITE.SEASONS DEFAULT '',
-    type            TRAVELITE.HIKE_TYPE         NOT NULL,
-    climb           INT                         NOT NULL,
-    region          TEXT                        NOT NULL,
-    creator_id      INT                         NOT NULL,
-    is_moderate     BOOL              DEFAULT false,
+    id              SERIAL PRIMARY KEY           NOT NULL,
+    name            CITEXT                       NOT NULL,
+    difficult       INT                          NOT NULL,
+    days            INT                          NOT NULL,
+    description     CITEXT                    DEFAULT '',
+    best_time_to_go TRAVELITE.SEASONS         DEFAULT '',
+    type            TRAVELITE.HIKE_TYPE          NOT NULL,
+    climb           INT                          NOT NULL,
+    region          TEXT                         NOT NULL,
+    creator_id      INT                          NOT NULL,
+    mod_status      TRAVELITE.MODERATE_STATUS DEFAULT 'no status',
+    distance        INT                          NOT NULL,
     route           GEOGRAPHY(LINESTRINGZ, 4326) NOT NULL,
     start           GEOGRAPHY(POINTZ, 4326)      NOT NULL,
     FOREIGN KEY (creator_id)
@@ -94,20 +96,35 @@ CREATE INDEX start_trek_idx ON travelite.trek USING GIST (start);
 --         ':description',
 --         ':image');
 
-select id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(route) as route, ST_AsText(start) as start from travelite.trek;
+select id,
+       name,
+       difficult,
+       days,
+       description,
+       best_time_to_go,
+       type,
+       climb,
+       region,
+       creator_id,
+       mod_status,
+       ST_AsText(route) as route,
+       ST_AsText(start) as start
+from travelite.trek;
 
 CREATE TABLE travelite.marks
 (
-    trek_id     INT                    NOT NULL,
+    trek_id     INT                     NOT NULL,
     point       GEOGRAPHY(POINTZ, 4326) NOT NULL,
-    title       TEXT                   NOT NULL,
+    title       TEXT                    NOT NULL,
     description TEXT DEFAULT '',
     image       TEXT DEFAULT '',
     FOREIGN KEY (trek_id)
         REFERENCES travelite.trek (id) ON DELETE CASCADE
 );
 
-select trek_id, st_astext(point), title, description, image from travelite.marks where trek_id=1;
+select trek_id, st_astext(point), title, description, image
+from travelite.marks
+where trek_id = 1;
 
 
 -- CREATE TABLE travelite.trek_rating

@@ -42,6 +42,11 @@ definitions:
   models.Route:
     properties:
       best_time_to_go:
+        enum:
+        - Зима
+        - ' Весна'
+        - ' Лето'
+        - ' Осень'
         example: Лето
         type: string
       climb:
@@ -59,16 +64,24 @@ definitions:
       difficult:
         example: 3
         type: integer
+      distance:
+        example: 1488
+        type: integer
       id:
         example: 2
         type: integer
-      is_moderate:
-        example: true
-        type: boolean
       marks:
         items:
           $ref: '#/definitions/models.Mark'
         type: array
+      mod_status:
+        enum:
+        - no status
+        - ' pending'
+        - ' failed'
+        - ' verified'
+        example: no status
+        type: string
       name:
         example: Lexa
         type: string
@@ -83,14 +96,30 @@ definitions:
         $ref: '#/definitions/models.Coordinates'
         type: object
       type:
+        enum:
+        - Пеший
+        - ' Горный'
+        - ' Водный'
+        - ' Альпинизм'
+        - ' Велотуризм'
+        - ' Бег'
+        - ' Мото'
+        - ' Авто'
+        - ' Скитур'
+        - ' Лыжный'
+        - ' Горный велотуризм'
+        - ' Бездорожье'
+        - ' Ски-альпинизм'
+        - ' Снегоступы'
         example: Пеший
         type: string
     required:
+    - best_time_to_go
     - climb
     - creator_id
     - days
     - difficult
-    - is_moderate
+    - distance
     - marks
     - name
     - region
@@ -124,6 +153,47 @@ paths:
         in: query
         name: sw
         type: string
+      - default: 0
+        description: limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: offset
+        in: query
+        name: offset
+        type: integer
+      - description: Route type
+        in: query
+        name: type
+        type: string
+      - description: Sort by this, default rate
+        in: query
+        name: sort
+        type: string
+      - default: false
+        description: sort desc or asc(by default)
+        in: query
+        name: desc
+        type: boolean
+      - description: difficult=1,4  FIRST is from SECOND is to
+        in: query
+        items:
+          type: integer
+        name: difficult
+        type: array
+      - description: days=2,6  FIRST is from SECOND is to
+        in: query
+        items:
+          type: integer
+        name: days
+        type: array
+      - description: distance=20,50  FIRST is from SECOND is to
+        in: query
+        items:
+          type: integer
+        name: distance
+        type: array
       produces:
       - application/json
       responses:
