@@ -43,7 +43,7 @@ type DBRoute struct {
 	Climb        int    `db:"climb"`
 	Region       string `db:"region"`
 	CreatorID    int    `db:"creator_id"`
-	IsModerate   string `db:"mod_status"`
+	ModStatus    string `db:"mod_status"`
 	Route        string `db:"route"`
 	Start        string `db:"start"`
 }

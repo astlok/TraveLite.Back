@@ -53,7 +53,7 @@ const InsertMarks = ` INSERT INTO travelite.marks (
 
 const SelectMarksByRouteID = `select trek_id, st_astext(point) as point, title, description, image from travelite.marks where trek_id=$1;`
 
-const SelectRouteByID = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, is_moderate, ST_AsText(route) AS ROUTE, ST_AsText(start) AS START from travelite.trek WHERE id = $1;`
+const SelectRouteByID = `SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, mod_status, ST_AsText(route) AS ROUTE, ST_AsText(start) AS START from travelite.trek WHERE id = $1;`
 
 const SelectAllRouteWithoutRouteLine = "SELECT id, name, difficult, days, description, best_time_to_go, type, climb, region, creator_id, mod_status, ST_AsText(start) AS START from travelite.trek"
 
