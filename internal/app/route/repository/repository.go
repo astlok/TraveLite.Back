@@ -10,7 +10,7 @@ import (
 const InsertTrek = `INSERT INTO travelite.trek (
 	name,
 	difficult,
-	disnatce,
+	distance,
 	days,
 	description,
 	best_time_to_go,
