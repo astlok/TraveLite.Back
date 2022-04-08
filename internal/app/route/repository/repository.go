@@ -185,11 +185,11 @@ func buildConditionsString(query string, conditions models.RouteConditions, allo
 	}
 
 	//TODO: сделат ордер бай рабочим
-	//if conditions.Desc {
-	//	filterString = fmt.Sprintf("%s ORDER BY %s DESC", filterString, conditions.OrderBy.String())
-	//} else {
-	//	filterString = fmt.Sprintf("%s ORDER BY %s", filterString, conditions.OrderBy.String())
-	//}
+	if conditions.Desc {
+		filterString = fmt.Sprintf("%s ORDER BY %s DESC", filterString, conditions.OrderBy.String())
+	} else {
+		filterString = fmt.Sprintf("%s ORDER BY %s", filterString, conditions.OrderBy.String())
+	}
 
 	if conditions.Limit != 0 {
 		filterString = fmt.Sprintf("%s LIMIT ?", filterString)

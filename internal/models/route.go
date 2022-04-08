@@ -71,22 +71,22 @@ var AllowedRouteFilters = map[string]string{
 type Sort int
 
 const (
-	Radius Sort = iota
-	Rating
+	Rating Sort = iota
+	Radius
 )
 
 func NewSort(s string) Sort {
 	switch s {
-	case "radius":
+	case "rate":
 		return Sort(0)
-	case "rating":
+	case "radius":
 		return Sort(1)
 	}
 	return Sort(0)
 }
 
 func (s Sort) String() string {
-	return []string{"radius", "rating"}[s]
+	return []string{"rate", "radius"}[s]
 }
 
 type RouteConditions struct {

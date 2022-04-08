@@ -56,60 +56,26 @@ CREATE TABLE travelite.trek
     distance        INT                          NOT NULL,
     route           GEOGRAPHY(LINESTRINGZ, 4326) NOT NULL,
     start           GEOGRAPHY(POINTZ, 4326)      NOT NULL,
+    rate            INT                       DEFAULT 0,
     FOREIGN KEY (creator_id)
         REFERENCES travelite.users (id)
 );
 
 CREATE INDEX start_trek_idx ON travelite.trek USING GIST (start);
--- SELECT enum_range(NULL::travelite.hike_type);
 
--- INSERT INTO travelite.trek (name,
---                             difficult,
---                             days,
---                             description,
---                             best_time_to_go,
---                             type,
---                             climb,
---                             region,
---                             creator_id,
---                             is_moderate,
---                             route,
---                             start)
--- VALUES (':name',
---         '8',
---         '2',
---         'asdkf',
---         'Зима',
---         'Пеший',
---         '288',
---         'Москва',
---         '1',
---         'true',
---         'LINESTRING Z(0 0 2, 1 1 2, 2 1 2, 2 2 3)',
---         'POINT Z (0 0 2)')
--- RETURNING id;
+CREATE OR REPLACE FUNCTION travelite.insert_random_rate() RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE travelite.trek SET rate=Cast(random() * 5 as int) WHERE id = NEW.id;
+    RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
 
--- INSERT INTO travelite.marks(trek_id, point, title, description, image)
--- VALUES (':trek_id',
---         ':point',
---         ':title',
---         ':description',
---         ':image');
-
-select id,
-       name,
-       difficult,
-       days,
-       description,
-       best_time_to_go,
-       type,
-       climb,
-       region,
-       creator_id,
-       mod_status,
-       ST_AsText(route) as route,
-       ST_AsText(start) as start
-from travelite.trek;
+CREATE TRIGGER rand_rate
+    AFTER INSERT
+    ON travelite.trek
+    FOR EACH ROW
+EXECUTE FUNCTION travelite.insert_random_rate();
 
 CREATE TABLE travelite.marks
 (

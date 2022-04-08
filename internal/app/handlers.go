@@ -26,9 +26,9 @@ func HandlersInit(db *sqlx.DB, s3Store *s3.S3) *echo.Echo {
 	api := e.Group("/api/v1")
 
 	route := api.Group("/route")
-	route.POST("/route", routeHandlers.CreateRoute)
-	route.GET("/route/:id", routeHandlers.GetRoute)
-	route.GET("/route", routeHandlers.GetRoutesWithFilters)
+	route.POST("", routeHandlers.CreateRoute)
+	route.GET("/:id", routeHandlers.GetRoute)
+	route.GET("", routeHandlers.GetRoutesWithFilters)
 
 	files := api.Group("/files")
 
