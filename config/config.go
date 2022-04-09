@@ -29,7 +29,12 @@ type Config struct {
 		AllowFiles       bool          `yaml:"allow_files"`
 		AllowOrigins     []string      `yaml:"allow_origins"`
 		MaxAge           time.Duration `yaml:"max_age"`
-	}
+	} `yaml:"cors"`
+
+	S3 struct {
+		Bucket  string `yaml:"bucket"`
+		FileURL string `yaml:"file_url"`
+	} `yaml:"s3"`
 }
 
 func ParseConfig(filePath string) (*Config, error) {

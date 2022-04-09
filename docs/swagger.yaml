@@ -1,4 +1,4 @@
-basePath: /
+basePath: /api/v1
 definitions:
   echo.HTTPError:
     properties:
@@ -20,6 +20,30 @@ definitions:
     - height
     - latitude
     - longitude
+    type: object
+  models.FileInfo:
+    properties:
+      link:
+        type: string
+    type: object
+  models.FileMeta:
+    properties:
+      filename:
+        example: kek.txt
+        type: string
+      id:
+        example: 9b7b28f3-966e-4fbe-b0a2-a7c5f9a90f0f.jbg
+        type: string
+      owner:
+        example: route
+        type: string
+      owner_id:
+        example: 2
+        type: integer
+    required:
+    - filename
+    - owner
+    - owner_id
     type: object
   models.Mark:
     properties:
@@ -85,6 +109,8 @@ definitions:
       name:
         example: Lexa
         type: string
+      rate:
+        type: integer
       region:
         example: Хабаровский край
         type: string
@@ -141,6 +167,63 @@ info:
   title: Echo Swagger Example API
   version: "1.0"
 paths:
+  /files:
+    post:
+      consumes:
+      - application/json
+      description: Create file metadata info like uuid
+      parameters:
+      - description: add file info, id return
+        in: body
+        name: file
+        required: true
+        schema:
+          $ref: '#/definitions/models.FileMeta'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.FileMeta'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Create file metadata info
+      tags:
+      - Files
+  /files/{id}:
+    put:
+      consumes:
+      - application/octet-stream
+      description: Upload file to remote storage
+      parameters:
+      - description: attach file in application/octet-stream body
+        in: body
+        name: file
+        required: true
+        schema:
+          type: string
+      - description: file id, type uuid
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FileInfo'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Upload file to storage
+      tags:
+      - Files
   /route:
     get:
       description: Get all routes without marks and route line

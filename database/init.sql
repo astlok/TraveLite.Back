@@ -88,11 +88,6 @@ CREATE TABLE travelite.marks
         REFERENCES travelite.trek (id) ON DELETE CASCADE
 );
 
-select trek_id, st_astext(point), title, description, image
-from travelite.marks
-where trek_id = 1;
-
-
 -- CREATE TABLE travelite.trek_rating
 -- (
 --     user_id INT    NOT NULL,
@@ -133,13 +128,24 @@ CREATE TABLE travelite.comment
     UNIQUE (user_id, trek_id)
 );
 
-CREATE TABLE travelite.comment_photo
+CREATE TYPE travelite.file_owner AS ENUM ('route', 'comment', 'user');
+
+CREATE TABLE travelite.files
 (
-    comment_id INT  NOT NULL,
-    photo_url  TEXT NOT NULL,
-    FOREIGN KEY (comment_id)
-        REFERENCES travelite.comment (id)
+    id       UUID PRIMARY KEY     NOT NULL,
+    filename TEXT                 NOT NULL,
+    owner    travelite.file_owner NOT NULL,
+    owner_id BIGINT               NOT NULL
 );
+
+-- INSERT INTO travelite.files(
+--     id, filename, owner, owner_id
+-- ) VALUES (
+--           :id,
+--           :filename,
+--           :owner,
+--           :owner_id
+-- );
 
 INSERT INTO travelite.region (name)
 VALUES ('Москва и МО'),

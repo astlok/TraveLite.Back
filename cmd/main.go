@@ -26,7 +26,7 @@ import (
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host localhost:8080
-// @BasePath /
+// @BasePath /api/v1
 // @schemes http
 
 func main() {
@@ -59,7 +59,7 @@ func main() {
 	//}
 	//fmt.Println(resp)
 
-	e := app.HandlersInit(p.GetPostgres(), s3store.Get())
+	e := app.HandlersInit(*c, p.GetPostgres(), s3store.Get())
 
 	e.Logger = l
 

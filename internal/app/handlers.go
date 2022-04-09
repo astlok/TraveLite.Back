@@ -1,6 +1,7 @@
 package app
 
 import (
+	"TraveLite/config"
 	filesH "TraveLite/internal/app/files/delivery"
 	filesR "TraveLite/internal/app/files/repository"
 	filesU "TraveLite/internal/app/files/usecase"
@@ -12,15 +13,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func HandlersInit(db *sqlx.DB, s3Store *s3.S3) *echo.Echo {
+func HandlersInit(config config.Config, db *sqlx.DB, s3Store *s3.S3) *echo.Echo {
 	e := echo.New()
 
 	routeRepo := routemapR.NewMapRepo(db)
 	routeUseCase := routemapU.NewMapUseCase(routeRepo)
 	routeHandlers := routemapH.NewMapHandler(routeUseCase)
 
-	filesRepo := filesR.NewFilesRepo(db, s3Store)
-	filesUseCase := filesU.NewFilesUseCase(filesRepo)
+	filesRepo := filesR.NewFilesRepo(db, s3Store, config.S3.Bucket)
+	filesUseCase := filesU.NewFilesUseCase(filesRepo, config.S3.FileURL)
 	filesHandlers := filesH.NewFileHandler(filesUseCase)
 
 	api := e.Group("/api/v1")
@@ -33,7 +34,7 @@ func HandlersInit(db *sqlx.DB, s3Store *s3.S3) *echo.Echo {
 	files := api.Group("/files")
 
 	files.POST("", filesHandlers.Create)
-	//files.PUT("/:id", filesHandlers.Upload)
+	files.PUT("/:id", filesHandlers.Upload)
 	//files.GET()
 
 	return e

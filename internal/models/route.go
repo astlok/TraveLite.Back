@@ -28,6 +28,7 @@ type Route struct {
 	ModStatus    string        `json:"mod_status" example:"no status" enums:"no status, pending, failed, verified"`
 	Marks        []Mark        `json:"marks,omitempty" validate:"required"`
 	Route        []Coordinates `json:"route,omitempty" validate:"required"`
+	Rate         int           `json:"rate,omitempty"`
 	Start        Coordinates   `json:"start" validate:"required"`
 }
 
@@ -45,6 +46,7 @@ type DBRoute struct {
 	CreatorID    int    `db:"creator_id"`
 	ModStatus    string `db:"mod_status"`
 	Route        string `db:"route"`
+	Rate         int    `db:"rate"`
 	Start        string `db:"start"`
 }
 

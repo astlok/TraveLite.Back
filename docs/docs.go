@@ -33,6 +33,93 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/files": {
+            "post": {
+                "description": "Create file metadata info like uuid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Create file metadata info",
+                "parameters": [
+                    {
+                        "description": "add file info, id return",
+                        "name": "file",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.FileMeta"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.FileMeta"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/{id}": {
+            "put": {
+                "description": "Upload file to remote storage",
+                "consumes": [
+                    "application/octet-stream"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Upload file to storage",
+                "parameters": [
+                    {
+                        "description": "attach file in application/octet-stream body",
+                        "name": "file",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "file id, type uuid",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.FileInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/route": {
             "get": {
                 "description": "Get all routes without marks and route line",
@@ -241,6 +328,40 @@ var doc = `{
                 }
             }
         },
+        "models.FileInfo": {
+            "type": "object",
+            "properties": {
+                "link": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.FileMeta": {
+            "type": "object",
+            "required": [
+                "filename",
+                "owner",
+                "owner_id"
+            ],
+            "properties": {
+                "filename": {
+                    "type": "string",
+                    "example": "kek.txt"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "9b7b28f3-966e-4fbe-b0a2-a7c5f9a90f0f.jbg"
+                },
+                "owner": {
+                    "type": "string",
+                    "example": "route"
+                },
+                "owner_id": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
         "models.Mark": {
             "type": "object",
             "required": [
@@ -341,6 +462,9 @@ var doc = `{
                     "type": "string",
                     "example": "Lexa"
                 },
+                "rate": {
+                    "type": "integer"
+                },
                 "region": {
                     "type": "string",
                     "example": "Хабаровский край"
@@ -393,7 +517,7 @@ type swaggerInfo struct {
 var SwaggerInfo = swaggerInfo{
 	Version:     "1.0",
 	Host:        "localhost:8080",
-	BasePath:    "/",
+	BasePath:    "/api/v1",
 	Schemes:     []string{"http"},
 	Title:       "Echo Swagger Example API",
 	Description: "This is a sample server server.",

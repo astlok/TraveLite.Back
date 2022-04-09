@@ -14,6 +14,10 @@ postgres:
 geography:
   srid: 4326
 
+s3:
+  bucket: trailite-1
+  file_url: https://trailite-1.hb.bizmrg.com
+
 cors:
   allow_methods:
     - "GET"
