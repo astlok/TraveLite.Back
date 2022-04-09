@@ -35,7 +35,7 @@ func HandlersInit(config config.Config, db *sqlx.DB, s3Store *s3.S3) *echo.Echo 
 
 	files.POST("", filesHandlers.Create)
 	files.PUT("/:id", filesHandlers.Upload)
-	//files.GET()
+	files.GET("/:entity/:id", filesHandlers.GetFilesByEntity)
 
 	return e
 }

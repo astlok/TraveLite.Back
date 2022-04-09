@@ -295,6 +295,51 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/{entity}/{id}": {
+            "get": {
+                "description": "Get files by entity like \"route\", \"user\" or \"comment\"",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Get files by entity",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "entity id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "entity name like ",
+                        "name": "entity",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.FileInfo"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/echo.HTTPError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

@@ -67,3 +67,25 @@ func (f FilesHandler) Upload(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, fileInfo)
 }
+
+// GetFilesByEntity godoc
+// @Summary Get files by entity
+// @Description Get files by entity like "route", "user" or "comment"
+// @Tags Files
+// @Produce json
+// @Param id path string true "entity id"
+// @Param entity path string true "entity name like "route", "user", or "comment""
+// @Success 200 {object} []models.FileInfo
+// @Failure 500 {object} echo.HTTPError
+// @Router /{entity}/{id} [get]
+func (f FilesHandler) GetFilesByEntity(c echo.Context) error {
+	entity := c.Param("entity")
+	entityID := c.Param("id")
+
+	filesInfo, err := f.filesUseCase.GetFilesInfoByEntity(entity, entityID)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, filesInfo)
+}

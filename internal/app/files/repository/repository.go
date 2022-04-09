@@ -69,4 +69,13 @@ func (f *FilesRepo) UpdateFileLink(fileID uuid.UUID, fileLink string) {
 	fmt.Println(err)
 }
 
-//func(f *FilesRepo)
+func (f *FilesRepo) GetFilesInfoByEntity(entity string, entityID uint64) ([]models.FileInfo, error) {
+	var filesInfo []models.FileInfo
+
+	err := f.db.Select(&filesInfo, `select link from travelite.files where owner = $1 and owner_id = $2;`, entity, entityID)
+	if err != nil {
+		return nil, err
+	}
+
+	return filesInfo, nil
+}

@@ -5,6 +5,7 @@ import (
 	"TraveLite/internal/models"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"strconv"
 )
 
 type FilesUseCase struct {
@@ -53,4 +54,18 @@ func (f FilesUseCase) Upload(file []byte, fileID string) (models.FileInfo, error
 	go f.filesRepo.UpdateFileLink(fileUUID, fileInfo.Link)
 
 	return fileInfo, nil
+}
+
+func (f FilesUseCase) GetFilesInfoByEntity(entity string, entityID string) ([]models.FileInfo, error) {
+	entityIDUint, err := strconv.ParseUint(entityID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	filesInfo, err := f.filesRepo.GetFilesInfoByEntity(entity, entityIDUint)
+	if err != nil {
+		return nil, err
+	}
+
+	return filesInfo, nil
 }

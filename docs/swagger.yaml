@@ -167,6 +167,36 @@ info:
   title: Echo Swagger Example API
   version: "1.0"
 paths:
+  /{entity}/{id}:
+    get:
+      description: Get files by entity like "route", "user" or "comment"
+      parameters:
+      - description: entity id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 'entity name like '
+        in: path
+        name: entity
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.FileInfo'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/echo.HTTPError'
+      summary: Get files by entity
+      tags:
+      - Files
   /files:
     post:
       consumes:

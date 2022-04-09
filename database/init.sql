@@ -140,6 +140,8 @@ CREATE TABLE travelite.files
 
 );
 
+select link from travelite.files where owner = $1 and owner_id = $2;
+
 -- INSERT INTO travelite.files(
 --     id, filename, owner, owner_id
 -- ) VALUES (
