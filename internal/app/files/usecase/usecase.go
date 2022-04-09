@@ -45,5 +45,12 @@ func (f FilesUseCase) Upload(file []byte, fileID string) (models.FileInfo, error
 
 	fileInfo.Link = f.fileURL + "/" + fileID
 
+	fileUUID, err := uuid.Parse(fileID)
+	if err != nil {
+		return models.FileInfo{}, err
+	}
+
+	go f.filesRepo.UpdateFileLink(fileUUID, fileInfo.Link)
+
 	return fileInfo, nil
 }

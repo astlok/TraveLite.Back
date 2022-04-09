@@ -135,7 +135,9 @@ CREATE TABLE travelite.files
     id       UUID PRIMARY KEY     NOT NULL,
     filename TEXT                 NOT NULL,
     owner    travelite.file_owner NOT NULL,
-    owner_id BIGINT               NOT NULL
+    owner_id BIGINT               NOT NULL,
+    link     text default ''
+
 );
 
 -- INSERT INTO travelite.files(

@@ -4,8 +4,10 @@ import (
 	"TraveLite/internal/models"
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -61,3 +63,10 @@ func (f *FilesRepo) Upload(file []byte, fileID string) error {
 
 	return nil
 }
+
+func (f *FilesRepo) UpdateFileLink(fileID uuid.UUID, fileLink string) {
+	_, err := f.db.Exec(`UPDATE travelite.files SET link = $1 WHERE id = $2`, fileLink, fileID)
+	fmt.Println(err)
+}
+
+//func(f *FilesRepo)
