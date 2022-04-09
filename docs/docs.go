@@ -165,6 +165,12 @@ var doc = `{
                     },
                     {
                         "type": "string",
+                        "description": "Region, ТОЛЬКО РАБОТАЕТ С ТЕМИ, ЧТО УЖЕ ЗАБИТЫ В БАЗЕ",
+                        "name": "region",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Sort by this, default rate",
                         "name": "sort",
                         "in": "query"

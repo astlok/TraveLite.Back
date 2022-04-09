@@ -65,6 +65,7 @@ type SearchPolygon struct {
 
 var AllowedRouteFilters = map[string]string{
 	"type":      "type",
+	"region":    "region",
 	"difficult": "difficult",
 	"days":      "days",
 	"distance":  "distance",

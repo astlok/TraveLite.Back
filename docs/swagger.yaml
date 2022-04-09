@@ -280,6 +280,10 @@ paths:
         in: query
         name: type
         type: string
+      - description: Region, ТОЛЬКО РАБОТАЕТ С ТЕМИ, ЧТО УЖЕ ЗАБИТЫ В БАЗЕ
+        in: query
+        name: region
+        type: string
       - description: Sort by this, default rate
         in: query
         name: sort

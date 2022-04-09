@@ -69,6 +69,8 @@ func (h *RouteHandler) GetRoute(c echo.Context) error {
 	return c.JSON(http.StatusOK, r)
 }
 
+//TODO: fix doc region param
+
 // GetRoutesWithFilters godoc
 // @Summary Get all routes
 // @Description  Get all routes without marks and route line
@@ -82,6 +84,7 @@ func (h *RouteHandler) GetRoute(c echo.Context) error {
 // @Param limit query int false "limit" default(0)
 // @Param offset query int false "offset" default(0)
 // @Param type query string false "Route type" Enums:(Пеший, Горный, Водный, Альпинизм, Велотуризм, Бег, Мото, Авто, Скитур, Лыжный, Горный велотуризм, Бездорожье, Ски-альпинизм, Снегоступы)
+// @Param region query string false "Region, ТОЛЬКО РАБОТАЕТ С ТЕМИ, ЧТО УЖЕ ЗАБИТЫ В БАЗЕ"
 // @Param sort query string false "Sort by this, default rate" Enums:(rate, radius)
 // @Param desc query boolean false "sort desc or asc(by default)" default(false)
 // @Param difficult query []int false "difficult=1,4  FIRST is from SECOND is to"
@@ -115,6 +118,17 @@ func (h *RouteHandler) GetRoutesWithFilters(c echo.Context) error {
 			}
 
 			conditions.FiltersCol["type"] = values[0]
+
+			return nil
+		}).
+		CustomFunc("region", func(values []string) []error {
+			var errs []error
+			if len(values) > 1 {
+				errs = append(errs, echo.NewBindingError("region", values, "more than 1 value in type param", nil))
+				return errs
+			}
+
+			conditions.FiltersCol["region"] = values[0]
 
 			return nil
 		}).
