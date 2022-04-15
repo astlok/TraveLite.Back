@@ -65,24 +65,24 @@ jobs:
   #       - name: tests post service
   #         run: cd postservice && go test ./...
 
-#  build:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v1
-#      - name: Login to DockerHub Registry
-#        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
-#      - name: Build Docker authservice image
-#        run: cd authservice && docker build -t astlok/ff:auth .
-#      - name: Build Docker postservice image
-#        run: cd postservice && docker build -t astlok/ff:post .
-#      - name: Build Docker imageservice image
-#        run: cd imageservice && docker build -t astlok/ff:image .
-#      - name: Build Docker userservice image
-#        run: cd userservice && docker build -t astlok/ff:user .
-#      - name: Build Docker tarantool image
-#        run: cd db && docker build -t astlok/ff:tarantool .
-#      - name: Push the authservice
-#        run: docker push --all-tags astlok/ff
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
+      - name: Build Docker image
+        run: docker build -t astlok/trailite:0.1 .
+      - name: Push the image
+        run: docker push --all-tags astlok/trailite
+      - name: copy docker-compose file to server
+        uses: ppleboy/scp-action@master
+        with:
+          host: 87.239.110.165
+          username: ubuntu
+          key: ${{ secrets.KEY }}
+          source: "docker-compose.yaml"
+          target: "/home/ubuntu/entrypoint"
 
   deploy:
     runs-on: ubuntu-latest
@@ -90,14 +90,22 @@ jobs:
     steps:
       - name: rm & build & run docker images
         uses: appleboy/ssh-action@master
+        if: "contains(github.event.head_commit.message, 'db-upd')"
         with:
           host: 87.239.110.165
           username: ubuntu
           key: ${{ secrets.KEY }}
           script: |
-            sudo docker rm -f $(sudo docker ps -a -q --filter ancestor=travelite:image)
-            sudo docker system prune -af
-            cd TraveLite.Back && git pull && sudo make run
+            cd /home/ubuntu/entrypoint && sudo docker-compose up --build --force-recreate --no-deps -d
+      - name: rm & build & run docker images
+        uses: appleboy/ssh-action@master
+        if: "!contains(github.event.head_commit.message, 'db-upd')"
+        with:
+          host: 87.239.110.165
+          username: ubuntu
+          key: ${{ secrets.KEY }}
+          script: |
+            cd /home/ubuntu/entrypoint && sudo docker-compose up --build --force-recreate --no-deps -d web
 #      - name: deploy docker image
 #        uses: appleboy/ssh-action@master
 #        with:

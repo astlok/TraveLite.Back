@@ -8,7 +8,7 @@ postgres:
   user: postgres
   db_name: postgres
   password: admin
-  host: 127.0.0.1
+  host: postgres
   port: 5432
 
 geography:

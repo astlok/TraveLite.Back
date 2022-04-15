@@ -6,7 +6,7 @@ DROP SCHEMA IF EXISTS travelite CASCADE;
 CREATE EXTENSION IF NOT EXISTS citext;
 CREATE EXTENSION IF NOT EXISTS postgis;
 
-CREATE SCHEMA travelite;
+CREATE SCHEMA IF NOT EXISTS travelite;
 
 CREATE TABLE travelite.users
 (
@@ -139,16 +139,6 @@ CREATE TABLE travelite.files
     link     text default ''
 
 );
-
-
--- INSERT INTO travelite.files(
---     id, filename, owner, owner_id
--- ) VALUES (
---           :id,
---           :filename,
---           :owner,
---           :owner_id
--- );
 
 INSERT INTO travelite.region (name)
 VALUES ('Москва и МО'),
