@@ -76,7 +76,7 @@ jobs:
       - name: Push the image
         run: docker push --all-tags astlok/trailite
       - name: copy docker-compose file to server
-        uses: ppleboy/scp-action@master
+        uses: appleboy/scp-action@master
         with:
           host: 87.239.110.165
           username: ubuntu
@@ -86,7 +86,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-#    needs: build
+    needs: build
     steps:
       - name: rm & build & run docker images
         uses: appleboy/ssh-action@master
