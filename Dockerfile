@@ -10,4 +10,4 @@ COPY ./config/config.yaml /config/
 
 EXPOSE 8080
 
-ENTRYPOINT ["/bin/trailite", "log", "stdout", "config", "/config/config.yaml"]
+CMD trailite log stdout config /config/config.yaml
