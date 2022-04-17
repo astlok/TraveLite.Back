@@ -90,7 +90,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.KEY }}
           source: "config/config.yaml"
-          target: "/home/ubuntu/config"
+          target: "/home/ubuntu/entrypoint/config"
 
   deploy:
     runs-on: ubuntu-latest
